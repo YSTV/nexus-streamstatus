@@ -10,19 +10,20 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/ystv/nexus-common"
 
-	log "github.com/sirupsen/logrus"
 	"net/url"
+
+	log "github.com/sirupsen/logrus"
 )
-
-
 
 func main() {
 	args := struct {
 		name, clientaddr, host string
+		secureWebsockets       bool
 	}{}
 	flag.StringVar(&args.name, "name", "", "The stream's name")
 	flag.StringVar(&args.clientaddr, "clientaddr", "", "IP address of stream's origin")
 	flag.StringVar(&args.host, "server", "", "Nexus server host")
+	flag.BoolVar(&args.secureWebsockets, "secure", true, "Use secure websockets")
 	flag.Parse()
 
 	signalChan := make(chan os.Signal, 1)
@@ -30,7 +31,11 @@ func main() {
 	t := time.NewTicker(time.Second * 1) // TODO: make configurable
 	defer t.Stop()
 
-	u := url.URL{Scheme: "ws", Host: args.host, Path: "/v1/ws/streamstatus"}
+	scheme := "wss"
+	if !args.secureWebsockets {
+		scheme = "ws"
+	}
+	u := url.URL{Scheme: scheme, Host: args.host, Path: "/v1/ws/streamstatus"}
 
 	conn, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
 	if err != nil {
