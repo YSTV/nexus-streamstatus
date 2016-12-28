@@ -1,0 +1,9 @@
+deployment:
+    release:
+        branch: master
+        commands:
+            - go get github.com/mitchellh/gox
+            - gox -output "dist/${CIRCLE_PROJECT_REPONAME}_{{.OS}}_{{.Arch}}" -osarch="linux/amd64 linux/386"
+            - wget https://github.com/tcnksm/ghr/releases/download/v0.5.3/ghr_v0.5.3_linux_amd64.zip
+            - unzip ghr_v0.5.3_linux_amd64.zip
+            - ./ghr -t $GITHUB_GHR_TOKEN -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME -delete `git describe --tags` dist/
